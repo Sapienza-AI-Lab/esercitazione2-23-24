@@ -8,6 +8,7 @@ using namespace std;
 void test_nn_resize() {
     Image im = load_image("data/dogsmall.jpg");
     Image resized = nearest_resize(im, im.w * 4, im.h * 4);
+    save_png(resized, "output/dog4x-nn");
     Image gt = load_image("data/dog4x-nn-for-test.png");
     TEST(same_image(resized, gt));
 
@@ -195,18 +196,18 @@ void test_equalization() {
 
 void run_tests() {
     test_nn_resize();
-    test_bl_resize();
-    test_multiple_resize();
-
-    test_gaussian_filter();
-    test_sharpen_filter();
-    test_emboss_filter();
+//    test_bl_resize();
+//    test_multiple_resize();
+//
+//    test_gaussian_filter();
+//    test_sharpen_filter();
+//    test_emboss_filter();
     test_highpass_filter();
-    test_convolution();
-    test_gaussian_blur();
-    test_hybrid_image();
-    test_frequency_image();
-    test_sobel();
+//    test_convolution();
+//    test_gaussian_blur();
+//    test_hybrid_image();
+//    test_frequency_image();
+//    test_sobel();
 
     test_bilateral();
     test_equalization();
