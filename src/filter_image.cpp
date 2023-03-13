@@ -182,6 +182,7 @@ Image make_gaussian_filter(float sigma) {
         }
 
     }
+    // the following line is not strictly necessary to pass the test, but it is  more correct
     l1_normalize(filter);
     return filter;
 
@@ -523,7 +524,7 @@ Image histogram_equalization_rgb(const Image &im, int num_bins) {
                 // convert from [0,1] to the required range and back
                 unsigned int val = (unsigned int) ((new_im(x, y, c) - eps) *
                                                    num_bins);
-                new_im(x, y, 2) = cdf[val];
+                new_im(x, y, c) = cdf[val];
             }
         }
         // delete the allocated memory!

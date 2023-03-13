@@ -87,6 +87,7 @@ void test_gaussian_filter() {
     for (int i = 0; i < f.w * f.h * f.c; i++)f.data[i] *= 100;
 
     Image gt = load_image("data/gaussian_filter_7.png");
+    save_png(f-gt, "output/gaussian_filter_7_diff");
     TEST(same_image(f, gt));
 }
 
@@ -183,12 +184,12 @@ void test_bilateral() {
 void test_equalization() {
     Image im = load_image("data/dog.jpg");
     Image eqim1 = histogram_equalization_rgb(im, 256);
-    save_png(eqim1, "output/equalized_hsv");
+    save_png(eqim1, "output/equalized_rgb");
     Image gt1 = load_image("data/equalized_rgb.png");
     TEST(same_image(eqim1, gt1));
 
     Image eqim2 = histogram_equalization_hsv(im, 256);
-    save_png(eqim2, "output/equalized_rgb");
+    save_png(eqim2, "output/equalized_hsv");
     Image gt2 = load_image("data/equalized_hsv.png");
     TEST(same_image(eqim2, gt2));
 }
@@ -196,18 +197,18 @@ void test_equalization() {
 
 void run_tests() {
     test_nn_resize();
-//    test_bl_resize();
-//    test_multiple_resize();
-//
-//    test_gaussian_filter();
-//    test_sharpen_filter();
-//    test_emboss_filter();
+    test_bl_resize();
+    test_multiple_resize();
+
+    test_gaussian_filter();
+    test_sharpen_filter();
+    test_emboss_filter();
     test_highpass_filter();
-//    test_convolution();
-//    test_gaussian_blur();
-//    test_hybrid_image();
-//    test_frequency_image();
-//    test_sobel();
+    test_convolution();
+    test_gaussian_blur();
+    test_hybrid_image();
+    test_frequency_image();
+    test_sobel();
 
     test_bilateral();
     test_equalization();
