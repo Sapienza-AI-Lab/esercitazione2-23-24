@@ -21,11 +21,12 @@ add_library(uwimg++ SHARED
      
      
      )
- 
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+
 link_libraries(uwimg++ m stdc++)
 
 
 add_executable(test0 src/test/test0.cpp)
 add_executable(test1 src/test/test1.cpp)
-
+target_link_libraries(test1 Eigen3::Eigen)
 

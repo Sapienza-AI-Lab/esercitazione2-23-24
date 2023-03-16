@@ -6,6 +6,11 @@
 #include <algorithm>
 #include "image.h"
 
+#include <iostream>
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+#include <chrono>
+
 #define M_PI 3.14159265358979323846
 
 // HW1 #2.1
@@ -102,6 +107,125 @@ Image convolve_image(const Image &im, const Image &filter, bool preserve) {
 
     return ret;
 }
+
+// HW1 #2.2+ Fast convolution
+// Functions for matrix to image and image to matrix conversion:
+Eigen::MatrixXd imageToMatrix(const Image& img, int ch, int kernel, bool pad) {
+    // CONVERT IMAGE (SINGLE CHANNEL) TO EIGEN MATRIX
+    if (pad){
+        // PAD THE IMAGE WITH THE CLAMPED PIXELS
+        Eigen::MatrixXd matrix(img.h+kernel+kernel, img.w+kernel+kernel);
+        for (int i = (-kernel); i < img.h+kernel; i++) {
+            for (int j = (-kernel); j < img.w+kernel; j++) {
+                matrix(i+kernel, j+kernel) = img.clamped_pixel(j, i, ch);
+            }
+        }
+        return matrix;
+    }
+    else{
+        // THE FILTER SHALL NOT BE PADDED
+        Eigen::MatrixXd matrix(img.h, img.w);
+        for (int i = 0; i < img.h; i++) {
+            for (int j = 0; j < img.w; j++) {
+                matrix(i, j) = img(i, j, ch);
+            }
+        }
+        return matrix;
+    }
+}
+
+Image matrixToImage(Eigen::MatrixXd matrixRed, Eigen::MatrixXd matrixGreen, Eigen::MatrixXd matrixBlue){
+    // REASSEMBLE THE IMAGE GIVEN THE 3 EIGEN MATRICES (3 CHANNELS)
+    assert(matrixRed.cols()==matrixGreen.cols() && matrixGreen.cols()==matrixBlue.cols());
+    assert(matrixRed.rows()==matrixGreen.rows() && matrixGreen.rows()==matrixBlue.rows());
+    int rows = matrixRed.rows();
+    int cols = matrixRed.cols();
+
+    Image im(cols, rows, 3);
+
+    for (int i = 0; i < cols; i++)for (int j = 0; j < rows; j++){
+            im(i, j, 0) = matrixRed(j, i);
+            im(i, j, 1) = matrixGreen(j, i);
+            im(i, j, 2) = matrixBlue(j, i);
+        }
+    return im;
+}
+
+Image matrixToImage(Eigen::MatrixXd matrix){
+    int rows = matrix.rows();
+    int cols = matrix.cols();
+
+    Image im(cols, rows);
+
+    for (int i = 0; i < cols; i++)for (int j = 0; j < rows; j++){
+            im(i, j) = matrix(j, i);
+        }
+    return im;
+
+}
+
+
+// const Image&im: input image
+// const Image& filter: filter to convolve with
+// bool preserve: whether to preserve number of channels
+// returns the convolved image
+Image convolve_image_fast(const Image &im, const Image &filter, bool preserve) {
+    assert(filter.c == 1);
+    Image ret;
+    // This is the case when we need to use the function clamped_pixel(x,y,c).
+    // Otherwise you'll have to manually check whether the filter goes out of bounds
+
+    // TODO: Make sure you set the sizes of ret properly. Use ret=Image(w,h,c) to reset ret
+    // TODO: Do the fast convolution operator. Remember to use Eigen for matrix operations
+    int kernel = (filter.w)/2;
+
+
+
+    int input_rows = im.h;
+    int input_cols = im.w;
+    int kernel_rows = filter.h;
+    int kernel_cols = filter.w;
+
+    Eigen::MatrixXd redImage{imageToMatrix(im, 0, kernel, true)};
+    Eigen::MatrixXd greenImage{imageToMatrix(im, 1, kernel, true)};
+    Eigen::MatrixXd blueImage{imageToMatrix(im, 2, kernel, true)};
+    Eigen::MatrixXd newKernel{imageToMatrix(filter, 0, kernel, false)};
+
+    if (preserve){
+        Eigen::MatrixXd outputRed = Eigen::MatrixXd::Zero(input_rows, input_cols);
+        Eigen::MatrixXd outputGreen = Eigen::MatrixXd::Zero(input_rows, input_cols);
+        Eigen::MatrixXd outputBlue = Eigen::MatrixXd::Zero(input_rows, input_cols);
+        for (int i = 0; i < input_rows; i++) {
+            for (int j = 0; j < input_cols; j++) {
+                Eigen::MatrixXd input_patchRed = redImage.block(i, j, kernel_rows, kernel_cols);
+                outputRed(i, j) = (input_patchRed.array() * newKernel.array()).sum();
+                Eigen::MatrixXd input_patchGreen = greenImage.block(i, j, kernel_rows, kernel_cols);
+                outputGreen(i, j) = (input_patchGreen.array() * newKernel.array()).sum();
+                Eigen::MatrixXd input_patchBlue = blueImage.block(i, j, kernel_rows, kernel_cols);
+                outputBlue(i, j) = (input_patchBlue.array() * newKernel.array()).sum();
+            }
+        }
+        // Re-assemble the image Eigen -> Image
+        Image newImage = matrixToImage(outputRed, outputGreen, outputBlue);
+        return newImage;
+    }
+    else{
+        Eigen::MatrixXd output = Eigen::MatrixXd::Zero(input_rows, input_cols);
+        for (int i = 0; i < input_rows; i++) {
+            for (int j = 0; j < input_cols; j++) {
+                Eigen::MatrixXd input_patchRed = redImage.block(i, j, kernel_rows, kernel_cols);
+                output(i, j) += (input_patchRed.array() * newKernel.array()).sum();
+                Eigen::MatrixXd input_patchGreen = greenImage.block(i, j, kernel_rows, kernel_cols);
+                output(i, j) += (input_patchGreen.array() * newKernel.array()).sum();
+                Eigen::MatrixXd input_patchBlue = blueImage.block(i, j, kernel_rows, kernel_cols);
+                output(i, j) += (input_patchBlue.array() * newKernel.array()).sum();
+            }
+        }
+        Image newImage = matrixToImage(output);
+        return newImage;
+    }
+}
+
 
 // HW1 #2.3
 // returns basic 3x3 high-pass filter
@@ -446,6 +570,19 @@ Image bilateral_filter(const Image &im, float sigma1, float sigma2) {
     }
 
     return res;
+}
+
+// HW1 #4.5+ Fast bilateral filter
+// const Image& im: input image
+// float sigma1,sigma2: the two sigmas for bilateral filter
+// returns the result of applying bilateral filtering to im
+Image bilateral_filter_fast(const Image &im, float sigma1, float sigma2) {
+    Image bf = im;
+
+    // TODO: Your fast bilateral code
+    NOT_IMPLEMENTED();
+
+    return bf;
 }
 
 // HM #5
