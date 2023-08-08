@@ -12,7 +12,8 @@
 using namespace std;
 
 #include "utils.h"
-
+#include <eigen3/Eigen/Core>
+using Matrix = Eigen::MatrixXd;
 
 // DO NOT CHANGE THIS FILE
 
@@ -268,4 +269,9 @@ Image sub_image(const Image& a, const Image& b);
 Image add_image(const Image& a, const Image& b);
 Image operator-(const Image& a, const Image& b);
 Image operator+(const Image& a, const Image& b);
+
+// Eigen to Image conversion
+Eigen::MatrixXd imageToMatrix(const Image& img, int ch, int kernel, bool pad);
+Image matrixToImage(const Eigen::MatrixXd& matrixRed, const Eigen::MatrixXd& matrixGreen, const Eigen::MatrixXd& matrixBlue);
+Image matrixToImage(const Eigen::MatrixXd& matrix);
 

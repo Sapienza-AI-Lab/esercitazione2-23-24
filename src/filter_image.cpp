@@ -134,7 +134,7 @@ Eigen::MatrixXd imageToMatrix(const Image& img, int ch, int kernel, bool pad) {
     }
 }
 
-Image matrixToImage(Eigen::MatrixXd matrixRed, Eigen::MatrixXd matrixGreen, Eigen::MatrixXd matrixBlue){
+Image matrixToImage(const Eigen::MatrixXd& matrixRed, const Eigen::MatrixXd& matrixGreen, const Eigen::MatrixXd& matrixBlue){
     // REASSEMBLE THE IMAGE GIVEN THE 3 EIGEN MATRICES (3 CHANNELS)
     assert(matrixRed.cols()==matrixGreen.cols() && matrixGreen.cols()==matrixBlue.cols());
     assert(matrixRed.rows()==matrixGreen.rows() && matrixGreen.rows()==matrixBlue.rows());
@@ -151,7 +151,7 @@ Image matrixToImage(Eigen::MatrixXd matrixRed, Eigen::MatrixXd matrixGreen, Eige
     return im;
 }
 
-Image matrixToImage(Eigen::MatrixXd matrix){
+Image matrixToImage(const Eigen::MatrixXd& matrix){
     int rows = matrix.rows();
     int cols = matrix.cols();
 
@@ -178,8 +178,6 @@ Image convolve_image_fast(const Image &im, const Image &filter, bool preserve) {
     // TODO: Make sure you set the sizes of ret properly. Use ret=Image(w,h,c) to reset ret
     // TODO: Do the fast convolution operator. Remember to use Eigen for matrix operations
     int kernel = (filter.w)/2;
-
-
 
     int input_rows = im.h;
     int input_cols = im.w;
