@@ -98,8 +98,8 @@ void test_fast_convolution() {
     stop = chrono::high_resolution_clock::now();
     auto fast_time = chrono::duration_cast<chrono::microseconds>(stop - t);
     blur2.clamp();
-    cout << "Standard convolution took " << standard_time.count() << " seconds" << endl;
-    cout << "Fast convolution took " << fast_time.count() << " seconds" << endl;
+    cout << "Standard convolution took " << standard_time.count() << " microseconds" << endl;
+    cout << "Fast convolution took " << fast_time.count() << " microseconds" << endl;
 
     Image gt = load_image("data/dog-box15.png");
     TEST(same_image(blur, gt));
@@ -233,7 +233,7 @@ void test_fast_bilateral(){
 }
 
 void test_equalization() {
-    Image im = load_image("output/equalized_hsv.png");
+    Image im = load_image("data/equalized_hsv.png");
     Image eqim1 = histogram_equalization_rgb(im, 256);
     save_png(eqim1, "output/equalized_rgb");
     Image gt1 = load_image("data/equalized_rgb.png");
@@ -247,7 +247,7 @@ void test_equalization() {
 
 
 void run_tests() {
-//    test_nn_resize();
+    test_nn_resize();
 //    test_bl_resize();
 //    test_multiple_resize();
 
@@ -255,13 +255,13 @@ void run_tests() {
 //    test_sharpen_filter();
 //    test_emboss_filter();
 //    test_highpass_filter();
-    test_convolution();
+//    test_convolution();
 //    test_gaussian_blur();
 //    test_hybrid_image();
 //    test_frequency_image();
 //    test_sobel();
 //
-//    test_bilateral();
+    test_bilateral();
     test_equalization();
     // tests on code efficiency
     test_fast_convolution();
